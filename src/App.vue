@@ -114,6 +114,7 @@ onMounted(loadWishes)
       </p>
       <ul
         v-else-if="wishes.length"
+        aria-label="Збережені бажання"
         class="mt-7 divide-y divide-stone-200 border-y border-stone-200"
       >
         <li
