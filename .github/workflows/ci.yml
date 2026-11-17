@@ -1,0 +1,52 @@
+name: UI CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: UI lint
+    runs-on: ubuntu-24.04
+    steps:
+      - &checkout
+        uses: actions/checkout@v6
+      - &node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - &install
+        name: Install locked dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - run: npm run lint
+
+  types:
+    name: UI typecheck
+    needs: lint
+    runs-on: ubuntu-24.04
+    steps:
+      - *checkout
+      - *node
+      - *install
+      - run: npm run typecheck
+
+  build:
+    name: UI build
+    needs: types
+    runs-on: ubuntu-24.04
+    steps:
+      - *checkout
+      - *node
+      - *install
+      - run: npm run build
+      - name: Upload production bundle
+        uses: actions/upload-artifact@v6
+        with:
+          name: wishlist-ui-dist
+          path: dist/
+          if-no-files-found: error
