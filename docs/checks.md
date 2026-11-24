@@ -4,11 +4,19 @@
 
 Для `main` діє ruleset із обов’язковим pull request, актуальністю щодо `main`, скиданням застарілих схвалень і забороною видалення та force-push. Список обходу порожній. В індивідуальній роботі кількість обов’язкових схвалень дорівнює нулю. Для злиття мають пройти `UI lint`, `UI typecheck` і `UI build`. [Налаштування ruleset](https://github.com/w1xes/wishlist-ui/rules/27492372)
 
-1. На коміті `da72788` GitHub повернув `mergeStateStatus: BLOCKED` для PR №1 після помилки ESLint. Перевірку типів і збірку пропустили. [PR №1](https://github.com/w1xes/wishlist-ui/pull/1) · [Невдалий прогін](https://github.com/w1xes/wishlist-ui/actions/runs/44167114420)
-2. Крок `Run npm run lint` повідомив, що невикористана змінна `brokenDemo` у `src/main.ts:5:7` порушила правило `@typescript-eslint/no-unused-vars`. [Журнал ESLint](https://github.com/w1xes/wishlist-ui/actions/runs/44167114420/job/134336007140#step:5:1)
-3. У тому самому PR коміт `b3d7f16` прибрав зайву змінну. Лінтер, перевірка типів і збірка пройшли, а GitHub повернув `mergeStateStatus: CLEAN`. [Виправлення](https://github.com/w1xes/wishlist-ui/pull/1/commits/b3d7f16ce3e29bdb6fbd4c2fa4036a6cbf2e0500) · [Успішний прогін](https://github.com/w1xes/wishlist-ui/actions/runs/44167372347)
+Доказ блокування — [PR №1](https://github.com/w1xes/wishlist-ui/pull/1). У ньому коміт `ce83076` навмисно додав невикористану змінну `brokenDemo` у `src/main.ts`, а коміт `dd06a0a` її прибрав.
 
-Стан злиття перевірено через GitHub CLI. Знімки екрана для завдання 4 ще потрібно додати.
+**1. Червона перевірка й заблокована кнопка злиття.** На коміті `ce83076` впав `UI lint`, а `UI typecheck` і `UI build` пропущено. Кнопка **Merge pull request** неактивна. [Прогін](https://github.com/w1xes/wishlist-ui/actions/runs/45461054407)
+
+![Pull request із червоною перевіркою UI lint та неактивною кнопкою злиття](assets/01-merge-blocked.jpg)
+
+**2. Рядок помилки в журналі.** Крок `Run npm run lint` повідомив `5:7 error 'brokenDemo' is assigned a value but never used @typescript-eslint/no-unused-vars` у `src/main.ts`. [Журнал ESLint](https://github.com/w1xes/wishlist-ui/actions/runs/45461054407/job/138683402689)
+
+![Журнал ESLint із помилкою no-unused-vars у src/main.ts](assets/02-failed-log.jpg)
+
+**3. Той самий pull request після виправлення.** Коміт `dd06a0a` прибрав зайву змінну. `UI lint`, `UI typecheck` і `UI build` зелені, кнопка **Merge pull request** активна. [Успішний прогін](https://github.com/w1xes/wishlist-ui/actions/runs/45461435191)
+
+![Той самий pull request із зеленими перевірками й активною кнопкою злиття](assets/03-merge-enabled.jpg)
 
 ## Вимірювання кешу
 
@@ -25,4 +33,4 @@
 
 ## Нічний аудит
 
-Окремий workflow `UI dependency audit` запускає `npm audit`. Ручний контрольний запуск виявив вразливість у транзитивній залежності `picomatch`. Аудит завершився з помилкою, а обов’язкові перевірки PR пройшли. [Результат аудиту](https://github.com/w1xes/wishlist-ui/actions/runs/44167184838) · [Звіт GitHub Advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)
+Окремий workflow `UI dependency audit` запускає `npm audit`. Ручний контрольний запуск 17 листопада завершився з помилкою через транзитивну залежність `picomatch` ([GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)), а обов’язкові перевірки PR пройшли. 18 листопада GitHub відкликав цей advisory, після чого нічні запуски стали зеленими. Залежності в репозиторії не змінювалися. [Результат аудиту](https://github.com/w1xes/wishlist-ui/actions/runs/44167184838)
