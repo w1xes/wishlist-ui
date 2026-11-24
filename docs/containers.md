@@ -268,6 +268,58 @@ http://localhost:8000
 
 У копії репозиторію (Node v24.21.0) пройшли `npm ci`, `npm run lint`, `npm run typecheck`, `npm run build` (Vite 7, 11 модулів), без попереджень у lint і typecheck.
 
+## Опубліковані образи в GHCR
+
+Реліз `v1.0.0` створено на коміті `b67af86` (злиття PR №2). Прогін на push у `main` ([run 45480573093](https://github.com/w1xes/wishlist-ui/actions/runs/45480573093)) опублікував теги `sha-<коміт>` і `main`, прогін на теґ ([run 45481176412](https://github.com/w1xes/wishlist-ui/actions/runs/45481176412)) додав `1.0.0`, `1.0`, `1` і `latest`. Усі п'ять job'ів (`UI lint`, `UI typecheck`, `UI build`, `UI image`, `UI image scan`) пройшли.
+
+Теги пакета `ghcr.io/w1xes/wishlist-ui`, отримані з реєстру:
+
+```
+main  sha-b67af86136bb6fce21adb9b71e8ef2b52ae20a96  1.0.0  1.0  1  latest
+```
+
+Пакет публічний, образ завантажується без входу в реєстр.
+
+![Сторінка пакета wishlist-ui у GHCR: статус Public, теги latest, 1, 1.0, 1.0.0, sha-... і main](assets/ghcr-package.jpg)
+
+```
+$ docker pull ghcr.io/w1xes/wishlist-ui:1.0.0
+...
+Digest: sha256:ce1c9657cd28f4494f4f9061b182b5d21f71f11fbf43422b4d605f34332c57f5
+Status: Downloaded newer image for ghcr.io/w1xes/wishlist-ui:1.0.0
+ghcr.io/w1xes/wishlist-ui:1.0.0
+```
+
+### Дві архітектури під одним тегом
+
+```
+$ docker buildx imagetools inspect ghcr.io/w1xes/wishlist-ui:1.0.0
+Name:      ghcr.io/w1xes/wishlist-ui:1.0.0
+MediaType: application/vnd.oci.image.index.v1+json
+Digest:    sha256:ce1c9657cd28f4494f4f9061b182b5d21f71f11fbf43422b4d605f34332c57f5
+
+Manifests:
+  Name:      ghcr.io/w1xes/wishlist-ui:1.0.0@sha256:85b78bd8f6a2ac1c55dc849c5d92ab420b66e55ed76f9be3459ceef7cfa47e5c
+  MediaType: application/vnd.oci.image.manifest.v1+json
+  Platform:  linux/amd64
+
+  Name:      ghcr.io/w1xes/wishlist-ui:1.0.0@sha256:c4b0f3354186d6567a9c3bd9165005514e7b46f1184af1f13aa63cf818eaef0c
+  MediaType: application/vnd.oci.image.manifest.v1+json
+  Platform:  linux/arm64
+```
+
+### Сканування Trivy
+
+Звіт `wishlist-ui-trivy-report` (артефакт [run 45481176412](https://github.com/w1xes/wishlist-ui/actions/runs/45481176412)) містить одну знахідку: `zlib 1.3.2-r1` (CVE-2026-4738, MEDIUM, виправлено в `1.4-r0`) в Alpine 3.24.4. Вона з базового образу nginx. Залежностей застосунку у фінальному образі немає, бо там лише `dist/`.
+
+### Адреса API у опублікованому образі
+
+Образ зібрано з `VITE_API_BASE=http://localhost:8000`, бо змінної репозиторію `VITE_API_BASE` немає. Для локального стека це правильно. Для розгортання на PaaS потрібна змінна репозиторію з адресою розгорнутого API або перезбирання образу з іншим `--build-arg`.
+
+### Ruleset
+
+`main` вимагає `UI lint`, `UI typecheck`, `UI build` і `UI image`. [Налаштування ruleset](https://github.com/w1xes/wishlist-ui/rules/27492372). Job `UI image scan` у списку немає.
+
 ## Що далі
 
 Стек із Postgres, Redis, API і UI однією командою, том із даними, секрети, діагностика поломок, публікація образів у GHCR, Trivy, multi-arch і режим розробки описані в [wishlist-api/docs/containers.md](https://github.com/w1xes/wishlist-api/blob/main/docs/containers.md).
