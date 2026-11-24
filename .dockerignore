@@ -1,0 +1,12 @@
+# Vite reads .env* at build time and would bake VITE_* values from them into the bundle.
+.env
+.env.*
+node_modules
+dist
+.git
+.github
+docs
+*.md
+Dockerfile
+.dockerignore
+compose*.yaml
