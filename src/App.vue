@@ -6,7 +6,7 @@ interface Wish {
   title: string
 }
 
-const apiUrl = (import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, '')
+const apiUrl = (import.meta.env.VITE_API_BASE ?? 'http://localhost:8000').replace(/\/$/, '')
 const wishes = ref<Wish[]>([])
 const title = ref('')
 const error = ref('')
